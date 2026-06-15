@@ -1,0 +1,66 @@
+export const STATUS = {
+  WO: {
+    OPEN: 'OPEN',
+    DIAGNOSED: 'DIAGNOSED',
+    WAITING_PARTS: 'WAITING_PARTS',
+    IN_PROGRESS: 'IN_PROGRESS',
+    QUALITY_CHECK: 'QUALITY_CHECK',
+    COMPLETED: 'COMPLETED',
+    DELIVERED: 'DELIVERED',
+  } as const,
+  PO: {
+    DRAFT: 'DRAFT',
+    SENT: 'SENT',
+    CONFIRMED: 'CONFIRMED',
+    SHIPPED: 'SHIPPED',
+    PARTIAL: 'PARTIAL',
+    RECEIVED: 'RECEIVED',
+    CANCELLED: 'CANCELLED',
+  } as const,
+  INVOICE: {
+    DRAFT: 'DRAFT',
+    ISSUED: 'ISSUED',
+    PARTIALLY_PAID: 'PARTIALLY_PAID',
+    PAID: 'PAID',
+    CANCELLED: 'CANCELLED',
+    CREDITED: 'CREDITED',
+  } as const,
+  TRANSFER: {
+    DRAFT: 'DRAFT',
+    PENDING: 'PENDING',
+    IN_TRANSIT: 'IN_TRANSIT',
+    RECEIVED: 'RECEIVED',
+    CANCELLED: 'CANCELLED',
+  } as const,
+  MOVEMENT: {
+    RECEIVING: 'RECEIVING',
+    SALE: 'SALE',
+    ADJUSTMENT: 'ADJUSTMENT',
+    TRANSFER_OUT: 'TRANSFER_OUT',
+    TRANSFER_IN: 'TRANSFER_IN',
+    RETURN_TO_SUPPLIER: 'RETURN_TO_SUPPLIER',
+    RETURN_FROM_CUSTOMER: 'RETURN_FROM_CUSTOMER',
+  } as const,
+} as const;
+
+export const WO_STATUS_TRANSITIONS: Record<string, string[]> = {
+  OPEN: ['DIAGNOSED', 'CANCELLED'],
+  DIAGNOSED: ['WAITING_PARTS', 'IN_PROGRESS', 'CANCELLED'],
+  WAITING_PARTS: ['IN_PROGRESS', 'CANCELLED'],
+  IN_PROGRESS: ['QUALITY_CHECK', 'CANCELLED'],
+  QUALITY_CHECK: ['COMPLETED', 'IN_PROGRESS'],
+  COMPLETED: ['DELIVERED'],
+  DELIVERED: [],
+};
+
+export function isValidWoTransition(from: string, to: string): boolean {
+  const allowed = WO_STATUS_TRANSITIONS[from];
+  return allowed ? allowed.includes(to) : false;
+}
+
+export const PRIORITY_ORDER: Record<string, number> = {
+  LOW: 0,
+  NORMAL: 1,
+  HIGH: 2,
+  URGENT: 3,
+};
