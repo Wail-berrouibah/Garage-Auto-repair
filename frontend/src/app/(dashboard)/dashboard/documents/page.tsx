@@ -12,7 +12,7 @@ const EXPORT_TYPES = {
     label: "Work Orders",
     icon: Wrench,
     endpoint: "/work-orders",
-    params: { pageSize: 999999 },
+    params: {},
     headers: [
       "ID", "Order #", "Status", "Customer Name", "Company", "Vehicle",
       "Complaint", "Description", "Actual Total", "Assigned To",
@@ -34,7 +34,7 @@ const EXPORT_TYPES = {
     label: "Customers",
     icon: Users,
     endpoint: "/customers",
-    params: { pageSize: 999999 },
+    params: {},
     headers: ["ID", "First Name", "Last Name", "Company", "Email", "Phone", "Vehicles", "Work Orders", "Created At"],
     row: (c: any) => [
       c.id, c.firstName || "", c.lastName || "", c.companyName || "",
@@ -47,7 +47,7 @@ const EXPORT_TYPES = {
     label: "Vehicles",
     icon: Car,
     endpoint: "/vehicles",
-    params: { pageSize: 999999 },
+    params: {},
     headers: ["ID", "License Plate", "VIN", "Make", "Model", "Year", "Color", "Branch", "Created At"],
     row: (v: any) => [
       v.id, v.licensePlate || "", v.vin || "", v.make || "", v.model || "",
@@ -59,7 +59,7 @@ const EXPORT_TYPES = {
     label: "Invoices",
     icon: Receipt,
     endpoint: "/invoices",
-    params: { pageSize: 999999 },
+    params: {},
     headers: ["ID", "Invoice #", "Status", "Total", "Amount Paid", "Work Order", "Created At"],
     row: (inv: any) => [
       inv.id, inv.invoiceNumber || inv.number || "", inv.status || "",
@@ -71,8 +71,8 @@ const EXPORT_TYPES = {
   SERVICE: {
     label: "Services",
     icon: BookOpen,
-    endpoint: "/services-catalog",
-    params: { pageSize: 999999 },
+    endpoint: "/services",
+    params: {},
     headers: ["ID", "Name", "Category", "Description", "Price", "Is Active", "Created At"],
     row: (s: any) => [
       s.id, s.name || "", s.category || "", s.description || "",
