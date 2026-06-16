@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
+import { isUUID } from 'class-validator';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../shared/prisma/prisma.service';
 import { CreateInventoryDto } from '../dto/create-inventory.dto';
@@ -119,6 +120,10 @@ export class InventoryService {
   }
 
   async findById(id: string) {
+    if (!isUUID(id)) {
+      throw new NotFoundException('Stock item not found');
+    }
+
     const item = await this.prisma.stockItem.findUnique({
       where: { id },
       include: {
@@ -134,6 +139,10 @@ export class InventoryService {
   }
 
   async update(id: string, dto: UpdateInventoryDto) {
+    if (!isUUID(id)) {
+      throw new NotFoundException('Stock item not found');
+    }
+
     const item = await this.prisma.stockItem.findUnique({ where: { id } });
 
     if (!item) {
@@ -185,6 +194,10 @@ export class InventoryService {
   }
 
   async remove(id: string) {
+    if (!isUUID(id)) {
+      throw new NotFoundException('Stock item not found');
+    }
+
     const item = await this.prisma.stockItem.findUnique({ where: { id } });
 
     if (!item) {
@@ -200,6 +213,10 @@ export class InventoryService {
   }
 
   async adjustStock(id: string, dto: AdjustInventoryDto, userId: string) {
+    if (!isUUID(id)) {
+      throw new NotFoundException('Stock item not found');
+    }
+
     const item = await this.prisma.stockItem.findUnique({ where: { id } });
 
     if (!item) {

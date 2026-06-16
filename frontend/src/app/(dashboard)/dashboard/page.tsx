@@ -8,6 +8,7 @@ import { Car, Wrench, Users, DollarSign, Loader2, ArrowRight } from "lucide-reac
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import MonthlyRevenueChart from "@/components/dashboard/monthly-revenue-chart";
+import WorkOrderStatusChart from "@/components/dashboard/work-order-status-chart";
 
 type WoStatus = "OPEN" | "DIAGNOSED" | "WAITING_PARTS" | "IN_PROGRESS" | "QUALITY_CHECK" | "COMPLETED" | "DELIVERED";
 
@@ -23,11 +24,17 @@ type RecentWorkOrder = {
   assignedMechanic: { firstName: string; lastName: string } | null;
 };
 
+type StatusBreakdownItem = {
+  status: string;
+  count: number;
+};
+
 type DashboardStats = {
   totalWorkOrders: number;
   vehiclesInShop: number;
   totalCustomers: number;
   totalRevenue: number;
+  statusBreakdown: StatusBreakdownItem[];
 };
 
 const STATUS_STYLES: Record<WoStatus, string> = {
@@ -120,10 +127,10 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-0.5">
+        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <p className="text-xs sm:text-sm text-muted-foreground">
           Overview of your workshop operations
         </p>
       </div>
@@ -134,22 +141,22 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
             {cards.map((stat) => {
               const Icon = stat.icon;
               return (
                 <Link key={stat.title} href={stat.href}>
                   <Card className="cursor-pointer transition-colors hover:bg-muted/50">
-                    <CardHeader className="flex-row items-center justify-between pb-2">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                    <CardHeader className="flex-row items-center justify-between pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+                      <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                         {stat.title}
                       </CardTitle>
-                      <div className={cn("rounded-lg p-2", stat.bg)}>
-                        <Icon className={cn("h-4 w-4", stat.color)} />
+                      <div className={cn("rounded-lg p-1.5 sm:p-2", stat.bg)}>
+                        <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", stat.color)} />
                       </div>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-semibold">{stat.value}</div>
+                    <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+                      <div className="text-lg sm:text-2xl font-semibold">{stat.value}</div>
                     </CardContent>
                   </Card>
                 </Link>
@@ -157,9 +164,9 @@ export default function DashboardPage() {
             })}
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader className="flex-row items-center justify-between">
+          <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="min-w-0">
+              <CardHeader className="flex-row items-center justify-between px-4 sm:px-6 pt-4 sm:pt-6">
                 <CardTitle className="text-sm font-medium">Recent Work Orders</CardTitle>
                 <Link href="/dashboard/work-orders">
                   <Button variant="ghost" size="sm" className="gap-1 text-xs">
@@ -177,20 +184,20 @@ export default function DashboardPage() {
                     {recentWorkOrders.map((wo) => (
                       <div
                         key={wo.id}
-                        className="flex items-center justify-between px-6 py-3 text-sm"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3 text-sm gap-0.5 sm:gap-0"
                       >
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs font-medium">{wo.woNumber}</span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono text-[11px] sm:text-xs font-medium">{wo.woNumber}</span>
                             <span className={cn("inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium", STATUS_STYLES[wo.status])}>
                               {wo.status.replace(/_/g, " ")}
                             </span>
                           </div>
-                          <p className="text-muted-foreground text-xs mt-0.5 truncate">
+                          <p className="text-muted-foreground text-[11px] sm:text-xs mt-0.5 truncate">
                             {wo.vehicle.make} {wo.vehicle.model} — {wo.customer.firstName} {wo.customer.lastName}
                           </p>
                         </div>
-                        <span className="text-xs text-muted-foreground ml-4 shrink-0">
+                        <span className="text-[11px] sm:text-xs text-muted-foreground sm:ml-4 shrink-0">
                           {formatDate(wo.createdAt)}
                         </span>
                       </div>
@@ -200,12 +207,29 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex-row items-center justify-between">
+            <Card className="min-w-0">
+              <CardHeader className="flex-row items-center justify-between px-4 sm:px-6 pt-4 sm:pt-6">
                 <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
               </CardHeader>
-              <CardContent>
-                <MonthlyRevenueChart />
+              <CardContent className="px-2 sm:px-6">
+                <div className="-mx-2 sm:mx-0">
+                  <MonthlyRevenueChart />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="min-w-0">
+              <CardHeader className="flex-row items-center justify-between px-4 sm:px-6 pt-4 sm:pt-6">
+                <CardTitle className="text-sm font-medium">Work Order Status</CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+                {stats?.statusBreakdown ? (
+                  <WorkOrderStatusChart data={stats.statusBreakdown} />
+                ) : (
+                  <div className="flex items-center justify-center py-10 text-center">
+                    <p className="text-sm text-muted-foreground">No status data available.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

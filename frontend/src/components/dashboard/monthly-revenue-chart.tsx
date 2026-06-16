@@ -51,8 +51,11 @@ export default function MonthlyRevenueChart() {
       setForbidden(false);
       setError(false);
       try {
+        const year = new Date().getFullYear();
+        const from = `${year}-01-01`;
+        const to = new Date().toISOString().split("T")[0];
         const res = await api.get<{ data: FinancialReport }>(
-          "/reports/financial"
+          `/reports/financial?from=${from}&to=${to}`
         );
         if (!cancelled) setData(res.data.monthlyRevenue || []);
       } catch (e) {

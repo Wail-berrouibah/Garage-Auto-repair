@@ -467,6 +467,45 @@ async function main() {
   }
   console.log(`  QC inspections: ${inspectionData.length} created`);
 
+  // ==================== MONTHLY REVENUE SEED ====================
+  const deliveredWos = await prisma.workOrder.findMany({
+    where: { status: 'DELIVERED', actualTotal: { not: null } },
+    orderBy: { id: 'asc' },
+    select: { id: true },
+  });
+
+  if (deliveredWos.length > 0) {
+    const monthConfig = [
+      { start: new Date('2026-01-10'), gapDays: 5, base: 800, range: 400 },
+      { start: new Date('2026-02-10'), gapDays: 5, base: 1100, range: 500 },
+      { start: new Date('2026-03-10'), gapDays: 5, base: 1200, range: 600 },
+      { start: new Date('2026-04-10'), gapDays: 5, base: 1400, range: 500 },
+      { start: new Date('2026-05-08'), gapDays: 5, base: 1500, range: 600 },
+      { start: new Date('2026-06-05'), gapDays: 3, base: 1600, range: 700 },
+    ];
+
+    for (let i = 0; i < deliveredWos.length; i++) {
+      const idx = i % 6; // cycle through 6 months
+      const cfg = monthConfig[idx];
+      const dayOffset = Math.floor(idx / 6) * cfg.gapDays + Math.floor(Math.random() * 3);
+      const date = new Date(cfg.start);
+      date.setDate(date.getDate() + dayOffset);
+      const total = cfg.base + Math.random() * cfg.range;
+
+      await prisma.workOrder.update({
+        where: { id: deliveredWos[i].id },
+        data: {
+          deliveredAt: date,
+          actualTotal: Math.round(total * 100) / 100,
+          completedAt: new Date(date.getTime() - 86400000),
+          startedAt: new Date(date.getTime() - 2 * 86400000),
+          createdAt: new Date(date.getTime() - 3 * 86400000),
+        },
+      });
+    }
+    console.log(`  Monthly revenue seeded: ${deliveredWos.length} work orders distributed`);
+  }
+
   // ==================== SUMMARY ====================
   console.log('\n=== Seed Complete ===');
   console.log('Login credentials (all passwords: admin123):');
