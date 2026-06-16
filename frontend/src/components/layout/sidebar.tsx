@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useAuthStore } from "@/stores/auth-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -54,6 +55,12 @@ export function Sidebar() {
   const pathname = usePathname();
   const { isOpen, toggle, setOpen } = useSidebarStore();
   const { user, logout } = useAuthStore();
+
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setOpen(false);
+    }
+  }, [setOpen]);
 
   const initials = user
     ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`
@@ -113,12 +120,11 @@ export function Sidebar() {
               <div
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-[var(--radius-md)] text-sm transition-all duration-200",
-                  !item.soon && "hover:bg-sidebar-active",
                   isActive
                     ? "bg-blue-50 text-blue-700 font-medium"
                     : item.soon
                       ? "text-muted-foreground/40 cursor-not-allowed"
-                      : "text-muted-foreground hover:bg-muted",
+                      : "text-muted-foreground",
                 )}
                 title={!isOpen ? item.label : undefined}
               >
@@ -142,7 +148,7 @@ export function Sidebar() {
               return <div key={item.href}>{content}</div>;
             }
             return (
-              <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>
+              <Link key={item.href} href={item.href} onClick={() => window.innerWidth < 768 && setOpen(false)}>
                 {content}
               </Link>
             );

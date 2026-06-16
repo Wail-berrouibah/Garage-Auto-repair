@@ -31,6 +31,48 @@ function getToken(): string | null {
   }
 }
 
+function getRefreshToken(): string | null {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem("auth-storage");
+  if (!stored) return null;
+  try {
+    const parsed = JSON.parse(stored);
+    return parsed.state?.refreshToken || null;
+  } catch {
+    return null;
+  }
+}
+
+function setTokens(accessToken: string, refreshToken: string): void {
+  if (typeof window === "undefined") return;
+  const stored = localStorage.getItem("auth-storage");
+  if (!stored) return;
+  try {
+    const parsed = JSON.parse(stored);
+    parsed.state.accessToken = accessToken;
+    parsed.state.refreshToken = refreshToken;
+    localStorage.setItem("auth-storage", JSON.stringify(parsed));
+  } catch {
+    // ignore
+  }
+}
+
+function clearAuth(): void {
+  if (typeof window === "undefined") return;
+  const stored = localStorage.getItem("auth-storage");
+  if (!stored) return;
+  try {
+    const parsed = JSON.parse(stored);
+    parsed.state.accessToken = null;
+    parsed.state.refreshToken = null;
+    parsed.state.isAuthenticated = false;
+    parsed.state.user = null;
+    localStorage.setItem("auth-storage", JSON.stringify(parsed));
+  } catch {
+    // ignore
+  }
+}
+
 function buildUrl(path: string, params?: Record<string, string | number | undefined>): string {
   const url = new URL(`${API_BASE}${path}`);
   if (params) {
@@ -41,7 +83,33 @@ function buildUrl(path: string, params?: Record<string, string | number | undefi
   return url.toString();
 }
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+let isRefreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshAccessToken(): Promise<boolean> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return false;
+
+  try {
+    const response = await fetch(`${API_BASE}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) return false;
+
+    const data = await response.json();
+    const newAccessToken = data.data?.accessToken || data.accessToken;
+    const newRefreshToken = data.data?.refreshToken || data.refreshToken;
+    setTokens(newAccessToken, newRefreshToken);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function performRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
     ...options.headers,
@@ -70,6 +138,44 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   }
 
   return response.json();
+}
+
+type RetryState = {
+  attempted: boolean;
+};
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const retry: RetryState = { attempted: false };
+
+  while (true) {
+    try {
+      return await performRequest<T>(path, options);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401 && getRefreshToken() && !retry.attempted) {
+        retry.attempted = true;
+
+        if (!isRefreshing) {
+          isRefreshing = true;
+          refreshPromise = refreshAccessToken().finally(() => {
+            isRefreshing = false;
+          });
+        }
+
+        const refreshed = refreshPromise ? await refreshPromise : false;
+        if (!refreshed) {
+          clearAuth();
+          if (typeof window !== "undefined") {
+            window.location.href = "/login";
+          }
+          throw new ApiError(401, "TOKEN_EXPIRED", "Session expired. Please login again.");
+        }
+
+        continue;
+      }
+
+      throw error;
+    }
+  }
 }
 
 export const api = {

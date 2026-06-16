@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Car, Wrench, Users, DollarSign, Loader2, ArrowRight } from "lucide-react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import MonthlyRevenueChart from "@/components/dashboard/monthly-revenue-chart";
 
 type WoStatus = "OPEN" | "DIAGNOSED" | "WAITING_PARTS" | "IN_PROGRESS" | "QUALITY_CHECK" | "COMPLETED" | "DELIVERED";
 
@@ -70,7 +71,8 @@ export default function DashboardPage() {
         }>("/work-orders", { page: 1, pageSize: 50, notStatus: "DELIVERED" }),
       ]);
       setStats(statsRes.data);
-      setRecentWorkOrders((woRes.data as any).data || []);
+      const allOrders: RecentWorkOrder[] = (woRes.data as any).data || [];
+      setRecentWorkOrders(allOrders.filter((o) => o.status !== "DELIVERED"));
     } catch {
       // silent
     } finally {
@@ -200,27 +202,10 @@ export default function DashboardPage() {
 
             <Card>
               <CardHeader className="flex-row items-center justify-between">
-                <CardTitle className="text-sm font-medium">Quick Links</CardTitle>
+                <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <Link href="/dashboard/work-orders">
-                  <Button variant="outline" className="w-full justify-start gap-3 h-11">
-                    <Wrench className="h-4 w-4 text-muted-foreground" />
-                    Manage Work Orders
-                  </Button>
-                </Link>
-                <Link href="/dashboard/customers">
-                  <Button variant="outline" className="w-full justify-start gap-3 h-11">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    Manage Customers
-                  </Button>
-                </Link>
-                <Link href="/dashboard/vehicles">
-                  <Button variant="outline" className="w-full justify-start gap-3 h-11">
-                    <Car className="h-4 w-4 text-muted-foreground" />
-                    Manage Vehicles
-                  </Button>
-                </Link>
+              <CardContent>
+                <MonthlyRevenueChart />
               </CardContent>
             </Card>
           </div>

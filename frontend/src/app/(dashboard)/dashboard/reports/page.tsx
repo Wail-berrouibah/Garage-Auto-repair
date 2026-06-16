@@ -282,15 +282,15 @@ export default function ReportsPage() {
         </p>
       </div>
 
-      <div className="flex gap-1 border-b border-border pb-0.5">
+      <div className="flex flex-col md:flex-row gap-1 border-b border-border pb-0.5 max-h-48 md:max-h-none overflow-y-auto">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-t-md transition-colors",
+              "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-t-md transition-colors shrink-0",
               activeTab === tab.key
-                ? "bg-card text-foreground border border-b-0 border-border"
+                ? "bg-card text-foreground border md:border-b-0 border-border"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >

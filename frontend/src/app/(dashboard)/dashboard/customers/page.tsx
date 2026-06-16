@@ -268,14 +268,14 @@ export default function CustomersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Customers</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Manage your customer directory
           </p>
         </div>
-        <Button onClick={openCreateModal} className="gap-2">
+        <Button onClick={openCreateModal} className="gap-2 w-full sm:w-auto">
           <Plus className="h-4 w-4" />
           Add Customer
         </Button>
@@ -300,147 +300,157 @@ export default function CustomersPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left font-medium text-muted-foreground px-4 py-3">Name</th>
+                  <th className="text-left font-medium text-muted-foreground px-4 py-3">Email</th>
+                  <th className="text-left font-medium text-muted-foreground px-4 py-3">Phone</th>
+                  <th className="text-left font-medium text-muted-foreground px-4 py-3">Type</th>
+                  <th className="text-left font-medium text-muted-foreground px-4 py-3">Status</th>
+                  <th className="text-left font-medium text-muted-foreground px-4 py-3">Vehicles</th>
+                  <th className="text-left font-medium text-muted-foreground px-4 py-3">Created</th>
+                  <th className="text-right font-medium text-muted-foreground px-4 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={8} className="text-center py-12">
+                      <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
+                    </td>
+                  </tr>
+                ) : customers.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="text-center py-12 text-muted-foreground">
+                      {search ? "No customers match your search." : "No customers yet. Add your first customer."}
+                    </td>
+                  </tr>
+                ) : (
+                  customers.map((customer) => (
+                      <tr
+                        key={customer.id}
+                        className="border-b border-border last:border-0 hover:bg-muted/50 transition-colors"
+                      >
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8 shrink-0">
+                              <AvatarFallback className="text-xs bg-accent/10 text-accent">
+                                {getInitials(customer.firstName, customer.lastName)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <span className="font-medium whitespace-nowrap">
+                                {customer.firstName} {customer.lastName}
+                              </span>
+                              {customer.companyName && (
+                                <span className="ml-1.5 text-xs text-muted-foreground whitespace-nowrap">
+                                  ({customer.companyName})
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-muted-foreground">{customer.email}</td>
+                        <td className="px-4 py-4 text-muted-foreground whitespace-nowrap">{customer.phone}</td>
+                        <td className="px-4 py-4">
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap",
+                              customer.customerType === "COMPANY"
+                                ? "bg-violet-50 text-violet-700"
+                                : "bg-blue-50 text-blue-700",
+                            )}
+                          >
+                            {customer.customerType === "COMPANY" ? (
+                              <Building2 className="h-3 w-3" />
+                            ) : (
+                              <User className="h-3 w-3" />
+                            )}
+                            {customer.customerType === "COMPANY" ? "Company" : "Individual"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap",
+                              customer.isActive ?? true
+                                ? "bg-green-50 text-green-700"
+                                : "bg-red-50 text-red-700",
+                            )}
+                          >
+                            {customer.isActive ?? true ? (
+                              <Check className="h-3 w-3" />
+                            ) : (
+                              <XCircle className="h-3 w-3" />
+                            )}
+                            {customer.isActive ?? true ? "Active" : "Inactive"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          <button
+                            onClick={() => openVehicleDialog(customer.id)}
+                            className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:text-accent/80 transition-colors whitespace-nowrap"
+                          >
+                            <Car className="h-3 w-3" />
+                            {customer._count?.vehicles ?? 0} vehicle{(customer._count?.vehicles ?? 0) !== 1 ? "s" : ""}
+                          </button>
+                        </td>
+                        <td className="px-4 py-4 text-muted-foreground whitespace-nowrap">{formatDate(customer.createdAt)}</td>
+                        <td className="px-4 py-4">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => openEditModal(customer)}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => openDeleteConfirm(customer.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    )))}
+                </tbody>
+              </table>
             </div>
-          ) : customers.length === 0 ? (
-            <div className="text-center py-16 text-sm text-muted-foreground">
-              {search ? "No customers match your search." : "No customers yet. Add your first customer."}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border">
+            <span className="text-xs text-muted-foreground">
+              Page {page} of {totalPages}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
             </div>
-          ) : (
-            <>
-              {/* Table Header */}
-              <div className="grid grid-cols-[1fr_1fr_1fr_0.6fr_0.5fr_0.6fr_0.8fr_80px] gap-4 px-6 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-border">
-                <div>Name</div>
-                <div>Email</div>
-                <div>Phone</div>
-                <div>Type</div>
-                <div>Status</div>
-                <div>Vehicles</div>
-                <div>Created</div>
-                <div className="text-right">Actions</div>
-              </div>
-
-              {/* Table Rows */}
-              {customers.map((customer) => (
-                <div
-                  key={customer.id}
-                  className="grid grid-cols-[1fr_1fr_1fr_0.6fr_0.5fr_0.6fr_0.8fr_80px] gap-4 px-6 py-4 items-center text-sm border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="text-xs bg-accent/10 text-accent">
-                        {getInitials(customer.firstName, customer.lastName)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <span className="font-medium">
-                        {customer.firstName} {customer.lastName}
-                      </span>
-                      {customer.companyName && (
-                        <span className="ml-1.5 text-xs text-muted-foreground">
-                          ({customer.companyName})
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-muted-foreground truncate">{customer.email}</div>
-                  <div className="text-muted-foreground">{customer.phone}</div>
-                  <div>
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
-                        customer.customerType === "COMPANY"
-                          ? "bg-violet-50 text-violet-700"
-                          : "bg-blue-50 text-blue-700",
-                      )}
-                    >
-                      {customer.customerType === "COMPANY" ? (
-                        <Building2 className="h-3 w-3" />
-                      ) : (
-                        <User className="h-3 w-3" />
-                      )}
-                      {customer.customerType === "COMPANY" ? "Company" : "Individual"}
-                    </span>
-                  </div>
-                  <div>
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
-                        customer.isActive ?? true
-                          ? "bg-green-50 text-green-700"
-                          : "bg-red-50 text-red-700",
-                      )}
-                    >
-                      {customer.isActive ?? true ? (
-                        <Check className="h-3 w-3" />
-                      ) : (
-                        <XCircle className="h-3 w-3" />
-                      )}
-                      {customer.isActive ?? true ? "Active" : "Inactive"}
-                    </span>
-                  </div>
-                  <div>
-                    <button
-                      onClick={() => openVehicleDialog(customer.id)}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:text-accent/80 transition-colors"
-                    >
-                      <Car className="h-3 w-3" />
-                      {customer._count?.vehicles ?? 0} vehicle{(customer._count?.vehicles ?? 0) !== 1 ? "s" : ""}
-                    </button>
-                  </div>
-                  <div className="text-muted-foreground">{formatDate(customer.createdAt)}</div>
-                  <div className="flex items-center justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => openEditModal(customer)}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => openDeleteConfirm(customer.id)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between px-6 py-4 border-t border-border">
-                  <span className="text-xs text-muted-foreground">
-                    Page {page} of {totalPages}
-                  </span>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page <= 1}
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    >
-                      Previous
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page >= totalPages}
-                      onClick={() => setPage((p) => p + 1)}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
+          </div>
+        )}
+      </CardContent>
       </Card>
 
       {/* Create/Edit Modal */}

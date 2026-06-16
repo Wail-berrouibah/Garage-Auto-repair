@@ -91,14 +91,14 @@ const emptyForm: WorkOrderForm = {
   status: "OPEN",
 };
 
-const NEXT_STATUS: Record<WoStatus, WoStatus | null> = {
-  OPEN: "DIAGNOSED",
-  DIAGNOSED: "IN_PROGRESS",
-  WAITING_PARTS: "IN_PROGRESS",
-  IN_PROGRESS: "QUALITY_CHECK",
-  QUALITY_CHECK: "COMPLETED",
-  COMPLETED: "DELIVERED",
-  DELIVERED: null,
+const STATUS_OPTIONS: Record<WoStatus, WoStatus[]> = {
+  OPEN: ["DIAGNOSED"],
+  DIAGNOSED: ["IN_PROGRESS", "WAITING_PARTS"],
+  WAITING_PARTS: ["IN_PROGRESS"],
+  IN_PROGRESS: ["QUALITY_CHECK"],
+  QUALITY_CHECK: ["COMPLETED", "IN_PROGRESS"],
+  COMPLETED: ["DELIVERED"],
+  DELIVERED: [],
 };
 
 const STATUS_STYLES: Record<WoStatus, string> = {
@@ -428,7 +428,7 @@ export default function WorkOrdersPage() {
                         <span className="ml-1 font-mono">{wo.vehicle.licensePlate}</span>
                       </td>
                       <td className="px-4 py-3">
-                        {NEXT_STATUS[wo.status] ? (
+                        {STATUS_OPTIONS[wo.status]?.length ? (
                           <div className="relative inline-flex items-center">
                             <select
                               value={wo.status}
@@ -442,11 +442,11 @@ export default function WorkOrdersPage() {
                               style={{ backgroundImage: "none" }}
                             >
                               <option value={wo.status}>{wo.status.replace(/_/g, " ")}</option>
-                              {NEXT_STATUS[wo.status] && (
-                                <option value={NEXT_STATUS[wo.status]!}>
-                                  → {NEXT_STATUS[wo.status]!.replace(/_/g, " ")}
+                              {STATUS_OPTIONS[wo.status].map((opt) => (
+                                <option key={opt} value={opt}>
+                                  → {opt.replace(/_/g, " ")}
                                 </option>
-                              )}
+                              ))}
                             </select>
                             {updatingStatusId === wo.id ? (
                               <Loader2 className="absolute right-1 h-3 w-3 animate-spin text-current" />

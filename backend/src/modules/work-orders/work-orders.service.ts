@@ -118,7 +118,7 @@ export class WorkOrdersService {
     };
 
     // When no specific status filter, sort: non-DELIVERED first, then DELIVERED
-    if (!status) {
+    if (!status && !notStatus) {
       const [nonDelivered, delivered, nonDeliveredCount, deliveredCount] = await Promise.all([
         this.prisma.workOrder.findMany({
           where: { ...where, status: { not: 'DELIVERED' } },
