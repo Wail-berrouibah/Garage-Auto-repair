@@ -1,0 +1,44 @@
+{
+  "family": "mechanica-api",
+  "taskRoleArn": "arn:aws:iam::xxxx:role/mechanica-api-task-role",
+  "executionRoleArn": "arn:aws:iam::xxxx:role/mechanica-api-execution-role",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "containerDefinitions": [
+    {
+      "name": "api",
+      "image": "ghcr.io/mechanica/mechanica-api:latest",
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 4000, "protocol": "tcp" }
+      ],
+      "environment": [
+        { "name": "NODE_ENV", "value": "staging" },
+        { "name": "PORT", "value": "4000" }
+      ],
+      "secrets": [
+        { "name": "DATABASE_URL", "valueFrom": "arn:aws:secretsmanager:us-east-1:xxxx:secret:db-url-staging" },
+        { "name": "REDIS_URL", "valueFrom": "arn:aws:secretsmanager:us-east-1:xxxx:secret:redis-url-staging" },
+        { "name": "JWT_SECRET", "valueFrom": "arn:aws:secretsmanager:us-east-1:xxxx:secret:jwt-secret-staging" },
+        { "name": "JWT_REFRESH_SECRET", "valueFrom": "arn:aws:secretsmanager:us-east-1:xxxx:secret:jwt-refresh-secret-staging" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/mechanica-staging-api",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:4000/api/v1/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
