@@ -288,6 +288,13 @@ export default function CustomersPage() {
           placeholder="Search by name, email, or phone..."
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              if (searchTimeout) clearTimeout(searchTimeout);
+              setPage(1);
+              (e.target as HTMLInputElement).blur();
+            }
+          }}
           className="pl-10 bg-muted/50"
         />
       </div>

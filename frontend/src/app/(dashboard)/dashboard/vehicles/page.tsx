@@ -203,6 +203,12 @@ export default function VehiclesPage() {
           placeholder="Search by VIN, make, model, or license plate..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setPage(1);
+              (e.target as HTMLInputElement).blur();
+            }
+          }}
           className="pl-9"
         />
       </div>

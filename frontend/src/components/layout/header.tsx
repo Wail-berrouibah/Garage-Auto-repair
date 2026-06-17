@@ -2,7 +2,7 @@
 
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Menu, Bell, Search } from "lucide-react";
+import { Menu, Bell } from "lucide-react";
 import { useAuthStore } from "@/stores/auth-store";
 
 export function Header() {
@@ -23,18 +23,7 @@ export function Header() {
           <Menu className="h-5 w-5" />
         </button>
 
-        {/* Search bar */}
-        <div className="relative hidden sm:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search work orders, customers..."
-            className="h-9 w-64 lg:w-80 rounded-lg border border-border bg-muted/50 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-accent/50 focus:bg-white transition-all"
-          />
-          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-[4px] border border-border bg-white text-[10px] font-medium text-muted-foreground/60">
-            <span>⌘</span>K
-          </kbd>
-        </div>
+
       </div>
 
       <div className="flex items-center gap-2">

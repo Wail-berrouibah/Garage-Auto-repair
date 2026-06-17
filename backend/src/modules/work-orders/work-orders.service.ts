@@ -34,45 +34,64 @@ export class WorkOrdersService {
     const yymmdd = `${date.getFullYear().toString().slice(2)}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
     const count = await this.prisma.workOrder.count({
       where: {
+        branchId,
         createdAt: {
           gte: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
         },
       },
     });
-    return `WO-${code}-${yymmdd}-${String(count + 1).padStart(4, '0')}`;
+    const seq = String(count + 1).padStart(4, '0');
+    const woNumber = `WO-${code}-${yymmdd}-${seq}`;
+    return woNumber;
   }
 
   async create(dto: CreateWorkOrderDto, branchId: string, userId: string) {
-    const woNumber = await this.generateWoNumber(branchId);
+    const maxRetries = 3;
 
-    const data: any = {
-      branchId,
-      woNumber,
-      customerId: dto.customerId,
-      vehicleId: dto.vehicleId,
-      complaint: dto.complaint,
-      priority: dto.priority ?? 'NORMAL',
-      diagnosis: dto.diagnosis,
-      odometerIn: dto.odometerIn,
-      odometerOut: dto.odometerOut,
-      assignedTo: dto.assignedTo,
-      estimatedTotal: dto.estimatedTotal,
-      promisedDate: dto.promisedDate ? new Date(dto.promisedDate) : undefined,
-      blockReason: dto.blockReason,
-    };
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const woNumber = await this.generateWoNumber(branchId);
 
-    const workOrder = await this.prisma.workOrder.create({ data });
+      const data: any = {
+        branchId,
+        woNumber,
+        customerId: dto.customerId,
+        vehicleId: dto.vehicleId,
+        complaint: dto.complaint,
+        priority: dto.priority ?? 'NORMAL',
+        diagnosis: dto.diagnosis,
+        odometerIn: dto.odometerIn,
+        odometerOut: dto.odometerOut,
+        assignedTo: dto.assignedTo,
+        estimatedTotal: dto.estimatedTotal,
+        promisedDate: dto.promisedDate ? new Date(dto.promisedDate) : undefined,
+        blockReason: dto.blockReason,
+      };
 
-    await this.prisma.woStatusHistory.create({
-      data: {
-        workOrderId: workOrder.id,
-        toStatus: 'OPEN',
-        changedBy: userId,
-      },
-    });
+      try {
+        const workOrder = await this.prisma.workOrder.create({ data });
 
-    this.logger.log(`Work order created: ${workOrder.woNumber} (${workOrder.id})`);
-    return workOrder;
+        await this.prisma.woStatusHistory.create({
+          data: {
+            workOrderId: workOrder.id,
+            toStatus: 'OPEN',
+            changedBy: userId,
+          },
+        });
+
+        this.logger.log(`Work order created: ${workOrder.woNumber} (${workOrder.id})`);
+        return workOrder;
+      } catch (err) {
+        if (
+          err instanceof Prisma.PrismaClientKnownRequestError &&
+          err.code === 'P2002' &&
+          attempt < maxRetries - 1
+        ) {
+          this.logger.warn(`WO number collision ${woNumber}, retrying (${attempt + 1}/${maxRetries})`);
+          continue;
+        }
+        throw err;
+      }
+    }
   }
 
   async findAll(query: QueryWorkOrderDto, branchId: string) {

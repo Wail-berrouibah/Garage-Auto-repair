@@ -184,7 +184,7 @@ export default function UsersPage() {
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Search users..." className="pl-9 max-w-sm" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <Input placeholder="Search users..." className="pl-9 max-w-sm" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }} />
       </div>
 
       <Card>

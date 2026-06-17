@@ -19,6 +19,7 @@ import { QualityControlModule } from './modules/quality-control/quality-control.
 import { ServicesCatalogModule } from './modules/services-catalog/services-catalog.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { DocumentsModule } from './modules/documents/documents.module';
+import { EmailModule } from './shared/email/email.module';
 import { AuditLogModule } from './modules/audit-log/audit-log.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
@@ -39,6 +40,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     CqrsModule,
     PrismaModule,
     RedisModule,
+    EmailModule,
     AuthModule,
     UsersModule,
     RolesModule,

@@ -235,6 +235,9 @@ export default function InventoryPage() {
               setSearch(e.target.value);
               setPage(1);
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+            }}
             className="pl-9"
           />
         </div>

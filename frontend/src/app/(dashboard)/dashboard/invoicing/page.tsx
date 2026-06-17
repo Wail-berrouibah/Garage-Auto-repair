@@ -217,6 +217,7 @@ export default function InvoicingPage() {
             placeholder="Search by invoice number or customer..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
             className="pl-9"
           />
         </div>

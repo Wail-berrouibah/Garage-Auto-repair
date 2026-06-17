@@ -348,6 +348,13 @@ export default function QualityControlPage() {
                 placeholder="Search templates..."
                 value={templatesSearch}
                 onChange={(e) => handleTemplatesSearchChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    if (searchTimeout) clearTimeout(searchTimeout);
+                    setTemplatesPage(1);
+                    (e.target as HTMLInputElement).blur();
+                  }
+                }}
                 className="pl-10 bg-muted/50"
               />
             </div>

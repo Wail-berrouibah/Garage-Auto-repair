@@ -390,6 +390,7 @@ export default function PurchasingPage() {
             placeholder={tab === "orders" ? "Search by PO number or supplier..." : "Search suppliers..."}
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
             className="pl-9"
           />
         </div>

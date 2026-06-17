@@ -13,7 +13,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PaginationQueryDto } from '../../common/dto/pagination.dto';
+
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -38,10 +38,11 @@ export class UsersController {
   @ApiOperation({ summary: 'List all users' })
   @ApiQuery({ name: 'search', required: false })
   async findAll(
-    @Query() pagination: PaginationQueryDto,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
     @Query('search') search?: string,
   ) {
-    return this.usersService.findAll(pagination, search);
+    return this.usersService.findAll({ page: page ?? 1, pageSize: pageSize ?? 25 }, search);
   }
 
   @Get(':id')
